@@ -1,0 +1,124 @@
+---
+title: "Practical Machine Learning Project"
+author: "Kapo Coulibaly"
+date: "Tuesday, November 17, 2015"
+output: html_document
+---
+
+# Introduction
+The rise of wearable fitness electronic devices that measure body movements has lead to the collection of a huge amount of data about the body movement. These data are used by thousands to track how active they are or the amount of exercise they get overall. Though these devices do a good job at tracking pattern and how much activity is logged, they do not provide any insights into how well some of these activities are performed. The present project aims to contribute to the qualitative aspect of thins by devising a model to actually tell how well some of the exercises are performed.
+
+# Data Description
+The data used for this study are measurements from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways labeled A, B, C, D, and E. A is the correct way of performing the exercise while the remaining are common mistakes.
+
+# Data cleaning and feature selection
+
+## Data cleaning
+For this assignment the model implemented will be tested against a testing dataset of 20 cases provided by the instructor. A quick look at the testing data set shows that a few variables are completely absent from the testing set (empty columns). So these variables will be automatically removed from the model implementation as they won't be of any use during prediction. 
+Let's read in the training and the testing dataset, and use the testing dataset just to get the indices of the features to be removed. It is asumed that the data provided have been downloaded and put in a folder which is the current R working folder. The working folder should contain at least two files: pml-testing.csv and pml-training.csv.
+
+```{r, message=FALSE}
+train.dat<-read.csv("pml-training.csv",header=TRUE)
+test.dat<-read.csv("pml-testing.csv",header=TRUE)
+head(test.dat,3)
+
+```
+The examination of the testing data shows a lot of empty cells and NAs. Let's compute the percentage of empty cells and NAs per feature to help determine which ones to eliminate.
+
+```{r}
+# function to compute the number of NAs and empty cells in a vector
+nacount<-function(x) {
+    num.na<-length(which(is.na(x)==TRUE | x=="" | x==" "))
+    return(num.na)
+}
+
+#create a vector with the percentage of NAs per features in the training set
+percNA<-apply(test.dat,2,FUN=nacount)/(dim(test.dat)[1])*100
+
+# Extract indices of features with all NA or empty cells 
+ind.na<-which(percNA==100)
+
+# How many feature are completely empty
+num.na<-length(ind.na)
+print(num.na)
+
+```
+Out of 160 features, 100 have completely empty columns in the testing set so these will be eliminated from the traning set
+
+```{r}
+# Eliminating features with 100% missing data in the training set
+train.dat<-train.dat[,-ind.na]
+```
+
+Let's conduct the same analysis with the training dataset but, because of the possibility of imputing the data we will only seek to find out if any feature have a least one missing data
+
+```{r}
+#create a vector with the percentage of NAs per features in the training set
+percNA<-apply(train.dat,2,FUN=nacount)/(dim(train.dat)[1])*100
+
+#Print how many features have at least one or more missing data
+num.m<-length(which(percNA>0))
+print(num.m)
+```
+
+It appears that none of the remaining features have missing data. The resulting training set will be used for the rest of the analysis.
+
+## Feature selection
+Intuitively the first column which is just a counting index can be removed from predictors. The user name also can be removed as the intent of the algorithm is to be able to predict for unknown future users. In any case based on prelimnary results the exclusion of the user name can be reconsidered. Now the nex step in the future selection is to eliminate strongly correlated features. This will be done with the caret package.
+First, let's divide the newly cleaned training data set into training and testing subsets.
+
+```{r}
+library(caret)
+set.seed(32323)
+# Removing counting index and username
+train.dat<-train.dat[,c(-1,-2)]
+
+# Partitioning data in 75% for training and 25% for testing
+intrain<-createDataPartition(y=train.dat$classe,p=0.75,list=FALSE)
+train.trg<-train.dat[intrain,]
+train.tstg<-train.dat[-intrain,]
+
+# ***** Finding highly correlated variables (cor coeff > 0.75) to remove ********
+
+# Correlation matrix (removing non numeric variables first)
+train.trg.num<-train.trg[,c(-3,-4,-58)]
+cormat<-cor(train.trg.num)
+
+# Correlated variable with cor coeff > 0.75
+highcormat<-findCorrelation(cormat, cutoff=0.75,names=FALSE)
+length(highcormat)
+
+```
+So 21 features are highly correlated and can be removed.
+
+```{r}
+# removing correlated features
+train.trg.num<-train.trg.num[,-highcormat]
+
+# Adding non-numeric variables back
+train.trg<-cbind(train.trg.num,train.trg[,c(3,4,58)])
+
+```
+
+# Model implementation
+We will experiment with random forest, with a cross-validation option first, depending on the outcome, we will try other algorithms or more feature preprocessing. 
+
+```{r,cache=TRUE}
+rf.mod.fit<-rf.mod<-train(classe~.,data=train.trg,method="rf",trControl=trainControl(method="cv",number=3))
+print(rf.mod.fit$finalModel)
+
+```
+An error of 0.06 % and an accuracy of 0.998 is achieved with only 3 fold, which is a quite reasonable accuracy. So there is no real need to investigate further methods or algorithms.
+
+# Prediction 
+Now let's predict the testing set and estimate the out of sample error:
+```{r}
+# Computing prediction
+rf.pred<-predict(rf.mod,train.tstg)
+
+# Computing out of sample error
+out.samp.error<-sum(rf.pred!=train.tstg$classe)/length(train.tstg$classe)*100
+
+```
+
+An out of sample error of `r out.samp.error` % is reported.
