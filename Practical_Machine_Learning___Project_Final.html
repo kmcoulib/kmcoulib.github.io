@@ -82,7 +82,7 @@ img {
 <p>For this assignment the model implemented will be tested against a testing dataset of 20 cases provided by the instructor. A quick look at the testing data set shows that a few variables are completely absent from the testing set (empty columns). So these variables will be automatically removed from the model implementation as they won’t be of any use during prediction. Let’s read in the training and the testing dataset, and use the testing dataset just to get the indices of the features to be removed. It is asumed that the data provided have been downloaded and put in a folder which is the current R working folder. The working folder should contain at least two files: pml-testing.csv and pml-training.csv.</p>
 <pre class="r"><code>train.dat&lt;-read.csv(&quot;pml-training.csv&quot;,header=TRUE)
 test.dat&lt;-read.csv(&quot;pml-testing.csv&quot;,header=TRUE)
-head(test.dat,3)</code></pre>
+head(test.dat[1:20],3)</code></pre>
 <pre><code>##   X user_name raw_timestamp_part_1 raw_timestamp_part_2   cvtd_timestamp
 ## 1 1     pedro           1323095002               868349 05/12/2011 14:23
 ## 2 2    jeremy           1322673067               778725 30/11/2011 17:11
@@ -99,151 +99,11 @@ head(test.dat,3)</code></pre>
 ## 1                 NA                   NA                NA            NA
 ## 2                 NA                   NA                NA            NA
 ## 3                 NA                   NA                NA            NA
-##   max_picth_belt max_yaw_belt min_roll_belt min_pitch_belt min_yaw_belt
-## 1             NA           NA            NA             NA           NA
-## 2             NA           NA            NA             NA           NA
-## 3             NA           NA            NA             NA           NA
-##   amplitude_roll_belt amplitude_pitch_belt amplitude_yaw_belt
-## 1                  NA                   NA                 NA
-## 2                  NA                   NA                 NA
-## 3                  NA                   NA                 NA
-##   var_total_accel_belt avg_roll_belt stddev_roll_belt var_roll_belt
-## 1                   NA            NA               NA            NA
-## 2                   NA            NA               NA            NA
-## 3                   NA            NA               NA            NA
-##   avg_pitch_belt stddev_pitch_belt var_pitch_belt avg_yaw_belt
-## 1             NA                NA             NA           NA
-## 2             NA                NA             NA           NA
-## 3             NA                NA             NA           NA
-##   stddev_yaw_belt var_yaw_belt gyros_belt_x gyros_belt_y gyros_belt_z
-## 1              NA           NA        -0.50        -0.02        -0.46
-## 2              NA           NA        -0.06        -0.02        -0.07
-## 3              NA           NA         0.05         0.02         0.03
-##   accel_belt_x accel_belt_y accel_belt_z magnet_belt_x magnet_belt_y
-## 1          -38           69         -179           -13           581
-## 2          -13           11           39            43           636
-## 3            1           -1           49            29           631
-##   magnet_belt_z roll_arm pitch_arm yaw_arm total_accel_arm var_accel_arm
-## 1          -382     40.7     -27.8     178              10            NA
-## 2          -309      0.0       0.0       0              38            NA
-## 3          -312      0.0       0.0       0              44            NA
-##   avg_roll_arm stddev_roll_arm var_roll_arm avg_pitch_arm stddev_pitch_arm
-## 1           NA              NA           NA            NA               NA
-## 2           NA              NA           NA            NA               NA
-## 3           NA              NA           NA            NA               NA
-##   var_pitch_arm avg_yaw_arm stddev_yaw_arm var_yaw_arm gyros_arm_x
-## 1            NA          NA             NA          NA       -1.65
-## 2            NA          NA             NA          NA       -1.17
-## 3            NA          NA             NA          NA        2.10
-##   gyros_arm_y gyros_arm_z accel_arm_x accel_arm_y accel_arm_z magnet_arm_x
-## 1        0.48       -0.18          16          38          93         -326
-## 2        0.85       -0.43        -290         215         -90         -325
-## 3       -1.36        1.13        -341         245         -87         -264
-##   magnet_arm_y magnet_arm_z kurtosis_roll_arm kurtosis_picth_arm
-## 1          385          481                NA                 NA
-## 2          447          434                NA                 NA
-## 3          474          413                NA                 NA
-##   kurtosis_yaw_arm skewness_roll_arm skewness_pitch_arm skewness_yaw_arm
-## 1               NA                NA                 NA               NA
-## 2               NA                NA                 NA               NA
-## 3               NA                NA                 NA               NA
-##   max_roll_arm max_picth_arm max_yaw_arm min_roll_arm min_pitch_arm
-## 1           NA            NA          NA           NA            NA
-## 2           NA            NA          NA           NA            NA
-## 3           NA            NA          NA           NA            NA
-##   min_yaw_arm amplitude_roll_arm amplitude_pitch_arm amplitude_yaw_arm
-## 1          NA                 NA                  NA                NA
-## 2          NA                 NA                  NA                NA
-## 3          NA                 NA                  NA                NA
-##   roll_dumbbell pitch_dumbbell yaw_dumbbell kurtosis_roll_dumbbell
-## 1     -17.73748       24.96085    126.23596                     NA
-## 2      54.47761      -53.69758    -75.51480                     NA
-## 3      57.07031      -51.37303    -75.20287                     NA
-##   kurtosis_picth_dumbbell kurtosis_yaw_dumbbell skewness_roll_dumbbell
-## 1                      NA                    NA                     NA
-## 2                      NA                    NA                     NA
-## 3                      NA                    NA                     NA
-##   skewness_pitch_dumbbell skewness_yaw_dumbbell max_roll_dumbbell
-## 1                      NA                    NA                NA
-## 2                      NA                    NA                NA
-## 3                      NA                    NA                NA
-##   max_picth_dumbbell max_yaw_dumbbell min_roll_dumbbell min_pitch_dumbbell
-## 1                 NA               NA                NA                 NA
-## 2                 NA               NA                NA                 NA
-## 3                 NA               NA                NA                 NA
-##   min_yaw_dumbbell amplitude_roll_dumbbell amplitude_pitch_dumbbell
-## 1               NA                      NA                       NA
-## 2               NA                      NA                       NA
-## 3               NA                      NA                       NA
-##   amplitude_yaw_dumbbell total_accel_dumbbell var_accel_dumbbell
-## 1                     NA                    9                 NA
-## 2                     NA                   31                 NA
-## 3                     NA                   29                 NA
-##   avg_roll_dumbbell stddev_roll_dumbbell var_roll_dumbbell
-## 1                NA                   NA                NA
-## 2                NA                   NA                NA
-## 3                NA                   NA                NA
-##   avg_pitch_dumbbell stddev_pitch_dumbbell var_pitch_dumbbell
-## 1                 NA                    NA                 NA
-## 2                 NA                    NA                 NA
-## 3                 NA                    NA                 NA
-##   avg_yaw_dumbbell stddev_yaw_dumbbell var_yaw_dumbbell gyros_dumbbell_x
-## 1               NA                  NA               NA             0.64
-## 2               NA                  NA               NA             0.34
-## 3               NA                  NA               NA             0.39
-##   gyros_dumbbell_y gyros_dumbbell_z accel_dumbbell_x accel_dumbbell_y
-## 1             0.06            -0.61               21              -15
-## 2             0.05            -0.71             -153              155
-## 3             0.14            -0.34             -141              155
-##   accel_dumbbell_z magnet_dumbbell_x magnet_dumbbell_y magnet_dumbbell_z
-## 1               81               523              -528               -56
-## 2             -205              -502               388               -36
-## 3             -196              -506               349                41
-##   roll_forearm pitch_forearm yaw_forearm kurtosis_roll_forearm
-## 1          141          49.3         156                    NA
-## 2          109         -17.6         106                    NA
-## 3          131         -32.6          93                    NA
-##   kurtosis_picth_forearm kurtosis_yaw_forearm skewness_roll_forearm
-## 1                     NA                   NA                    NA
-## 2                     NA                   NA                    NA
-## 3                     NA                   NA                    NA
-##   skewness_pitch_forearm skewness_yaw_forearm max_roll_forearm
-## 1                     NA                   NA               NA
-## 2                     NA                   NA               NA
-## 3                     NA                   NA               NA
-##   max_picth_forearm max_yaw_forearm min_roll_forearm min_pitch_forearm
-## 1                NA              NA               NA                NA
-## 2                NA              NA               NA                NA
-## 3                NA              NA               NA                NA
-##   min_yaw_forearm amplitude_roll_forearm amplitude_pitch_forearm
-## 1              NA                     NA                      NA
-## 2              NA                     NA                      NA
-## 3              NA                     NA                      NA
-##   amplitude_yaw_forearm total_accel_forearm var_accel_forearm
-## 1                    NA                  33                NA
-## 2                    NA                  39                NA
-## 3                    NA                  34                NA
-##   avg_roll_forearm stddev_roll_forearm var_roll_forearm avg_pitch_forearm
-## 1               NA                  NA               NA                NA
-## 2               NA                  NA               NA                NA
-## 3               NA                  NA               NA                NA
-##   stddev_pitch_forearm var_pitch_forearm avg_yaw_forearm
-## 1                   NA                NA              NA
-## 2                   NA                NA              NA
-## 3                   NA                NA              NA
-##   stddev_yaw_forearm var_yaw_forearm gyros_forearm_x gyros_forearm_y
-## 1                 NA              NA            0.74           -3.34
-## 2                 NA              NA            1.12           -2.78
-## 3                 NA              NA            0.18           -0.79
-##   gyros_forearm_z accel_forearm_x accel_forearm_y accel_forearm_z
-## 1           -0.59            -110             267            -149
-## 2           -0.18             212             297            -118
-## 3            0.28             154             271            -129
-##   magnet_forearm_x magnet_forearm_y magnet_forearm_z problem_id
-## 1             -714              419              617          1
-## 2             -237              791              873          2
-## 3              -51              698              783          3</code></pre>
-<p>The examination of the testing data (not shown because of word count limitation) show a lot of empty cells and NAs. Let’s compute the percentage of empty cells and NAs per feature to help determine which ones to eliminate.</p>
+##   max_picth_belt max_yaw_belt
+## 1             NA           NA
+## 2             NA           NA
+## 3             NA           NA</code></pre>
+<p>The examination of the testing data (only the first three rows shown above) shows a lot of empty cells and NAs. Let’s compute the percentage of empty cells and NAs per feature to help determine which ones to eliminate.</p>
 <pre class="r"><code># function to compute the number of NAs and empty cells in a vector
 nacount&lt;-function(x) {
     num.na&lt;-length(which(is.na(x)==TRUE | x==&quot;&quot; | x==&quot; &quot;))
@@ -263,7 +123,7 @@ print(num.na)</code></pre>
 <p>Out of 160 features, 100 have completely empty columns in the testing set so these will be eliminated from the traning set</p>
 <pre class="r"><code># Eliminating features with 100% missing data in the training set
 train.dat&lt;-train.dat[,-ind.na]</code></pre>
-<p>Let’s conduct the same analysis with the training dataset but, because of the possibility of imputing the data we will only seek to find out if any feature have a least one missing data</p>
+<p>Let’s conduct the same analysis with the training dataset but, because of the possibility of imputing the data we will only seek to find out if any feature have at least one missing data.</p>
 <pre class="r"><code>#create a vector with the percentage of NAs per features in the training set
 percNA&lt;-apply(train.dat,2,FUN=nacount)/(dim(train.dat)[1])*100
 
@@ -279,7 +139,7 @@ print(num.m)</code></pre>
 <pre class="r"><code>library(caret)</code></pre>
 <pre><code>## Loading required package: lattice
 ## Loading required package: ggplot2</code></pre>
-<pre class="r"><code>set.seed(32323)
+<pre class="r"><code>set.seed(1234)
 # Removing counting index and username
 train.dat&lt;-train.dat[,c(-1,-2)]
 
@@ -297,7 +157,7 @@ cormat&lt;-cor(train.trg.num)
 # Correlated variable with cor coeff &gt; 0.75
 highcormat&lt;-findCorrelation(cormat, cutoff=0.75,names=FALSE)
 length(highcormat)</code></pre>
-<pre><code>## [1] 22</code></pre>
+<pre><code>## [1] 21</code></pre>
 <p>So 21 features are highly correlated and can be removed.</p>
 <pre class="r"><code># removing correlated features
 train.trg.num&lt;-train.trg.num[,-highcormat]
@@ -309,27 +169,43 @@ train.trg&lt;-cbind(train.trg.num,train.trg[,c(3,4,58)])</code></pre>
 <div id="model-implementation" class="section level1">
 <h1>Model implementation</h1>
 <p>We will experiment with random forest, with a cross-validation option first, depending on the outcome, we will try other algorithms or more feature preprocessing.</p>
-<pre class="r"><code>rf.mod.fit&lt;-rf.mod&lt;-train(classe~.,data=train.trg,method=&quot;rf&quot;,trControl=trainControl(method=&quot;cv&quot;,number=3))</code></pre>
-<pre><code>## Loading required package: randomForest
-## randomForest 4.6-12
-## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre class="r"><code>rf.mod.fit&lt;-rf.mod&lt;-train(classe~.,data=train.trg,method=&quot;rf&quot;,trControl=trainControl(method=&quot;cv&quot;,number=3))
+print(rf.mod.fit)</code></pre>
+<pre><code>## Random Forest 
+## 
+## 14718 samples
+##    36 predictor
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (3 fold) 
+## Summary of sample sizes: 9811, 9812, 9813 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa      Accuracy SD   Kappa SD   
+##    2    0.9843049  0.9801437  0.0019446288  0.002459423
+##   28    0.9989809  0.9987110  0.0005390534  0.000681792
+##   54    0.9973503  0.9966486  0.0008879496  0.001123109
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 28.</code></pre>
 <pre class="r"><code>print(rf.mod.fit$finalModel)</code></pre>
 <pre><code>## 
 ## Call:
 ##  randomForest(x = x, y = y, mtry = param$mtry) 
 ##                Type of random forest: classification
 ##                      Number of trees: 500
-## No. of variables tried at each split: 27
+## No. of variables tried at each split: 28
 ## 
 ##         OOB estimate of  error rate: 0.1%
 ## Confusion matrix:
 ##      A    B    C    D    E  class.error
-## A 4185    0    0    0    0 0.0000000000
-## B    3 2843    2    0    0 0.0017556180
-## C    0    2 2561    4    0 0.0023373588
+## A 4184    0    0    0    1 0.0002389486
+## B    2 2842    4    0    0 0.0021067416
+## C    0    3 2562    2    0 0.0019477990
 ## D    0    0    0 2411    1 0.0004145937
-## E    0    0    0    2 2704 0.0007390983</code></pre>
-<p>An error of 0.06 % and an accuracy of 0.998 is achieved with only 3 fold, which is a quite reasonable accuracy. So there is no real need to investigate further methods or algorithms.</p>
+## E    0    0    0    1 2705 0.0003695492</code></pre>
+<p>An accuracy of 0.99889809 is achieved with only 3 fold, which is quite a reasonable accuracy. So there is no real need to investigate further methods or algorithms.</p>
 </div>
 <div id="prediction" class="section level1">
 <h1>Prediction</h1>
@@ -341,7 +217,7 @@ rf.pred&lt;-predict(rf.mod,train.tstg)</code></pre>
 ## Type rfNews() to see new features/changes/bug fixes.</code></pre>
 <pre class="r"><code># Computing out of sample error
 out.samp.error&lt;-sum(rf.pred!=train.tstg$classe)/length(train.tstg$classe)*100</code></pre>
-<p>An out of sample error of 0.0611746 % is reported.</p>
+<p>An out of sample error of 0.1019576 % is reported.</p>
 </div>
 
 

@@ -20,10 +20,10 @@ Let's read in the training and the testing dataset, and use the testing dataset 
 ```{r, message=FALSE}
 train.dat<-read.csv("pml-training.csv",header=TRUE)
 test.dat<-read.csv("pml-testing.csv",header=TRUE)
-head(test.dat,3)
+head(test.dat[1:20],3)
 
 ```
-The examination of the testing data shows a lot of empty cells and NAs. Let's compute the percentage of empty cells and NAs per feature to help determine which ones to eliminate.
+The examination of the testing data (only the first three rows shown above) shows a lot of empty cells and NAs. Let's compute the percentage of empty cells and NAs per feature to help determine which ones to eliminate.
 
 ```{r}
 # function to compute the number of NAs and empty cells in a vector
@@ -50,7 +50,7 @@ Out of 160 features, 100 have completely empty columns in the testing set so the
 train.dat<-train.dat[,-ind.na]
 ```
 
-Let's conduct the same analysis with the training dataset but, because of the possibility of imputing the data we will only seek to find out if any feature have a least one missing data
+Let's conduct the same analysis with the training dataset but, because of the possibility of imputing the data we will only seek to find out if any feature have at least one missing data.
 
 ```{r}
 #create a vector with the percentage of NAs per features in the training set
@@ -69,7 +69,7 @@ First, let's divide the newly cleaned training data set into training and testin
 
 ```{r}
 library(caret)
-set.seed(32323)
+set.seed(1234)
 # Removing counting index and username
 train.dat<-train.dat[,c(-1,-2)]
 
@@ -105,10 +105,11 @@ We will experiment with random forest, with a cross-validation option first, dep
 
 ```{r,cache=TRUE}
 rf.mod.fit<-rf.mod<-train(classe~.,data=train.trg,method="rf",trControl=trainControl(method="cv",number=3))
+print(rf.mod.fit)
 print(rf.mod.fit$finalModel)
 
 ```
-An error of 0.06 % and an accuracy of 0.998 is achieved with only 3 fold, which is a quite reasonable accuracy. So there is no real need to investigate further methods or algorithms.
+An accuracy of 0.99889809 is achieved with only 3 fold, which is quite a reasonable accuracy. So there is no real need to investigate further methods or algorithms.
 
 # Prediction 
 Now let's predict the testing set and estimate the out of sample error:
